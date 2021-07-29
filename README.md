@@ -2,6 +2,8 @@
 
 This is a module to comunicate with the Arduino an a node aplication
 
+The proyect use SerialPort library. For more information you can visit [SerialPort web site](https://serialport.io/)
+
 ## Usage
 
 ````js
@@ -48,6 +50,8 @@ You can try a terminal example running the comand
 `npm run example`
 
 
+
+
 ## License
 
-Licensed under MIT
+* Licensed under MIT

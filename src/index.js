@@ -38,7 +38,7 @@ class Rfid extends SerialPort {
      * @param {readCardCallback} callback - Callback function
      * @returns {Promise<string>} - returns de UID of the card read
      */
-    readCard = (timeout = 5000, callback) => new Promise((resolve, reject) => {
+    readCard = (timeout = 6000, callback) => new Promise((resolve, reject) => {
         const timer = setTimeout(() => {
             callback && callback(new Error('time out! No card detected'));
             reject('time out! No card detected');
@@ -64,6 +64,7 @@ class Rfid extends SerialPort {
      * @param {Message} message message to sen on the serial port
      * @return {Promise<void>} resolve when the message is send 
      */
+    
     send = (message) => new Promise((resolve, reject) => {
         this.write(message);
         this.drain((error) => {
@@ -71,6 +72,19 @@ class Rfid extends SerialPort {
             resolve();
         })
     });
+
+
+    /**
+     * Disconnect the serial port
+     * @method disconnect
+     * @returns {Promise<void>} resolve when the connection is close
+     */
+    disconnect = () => new Promise((resolve, reject) =>{
+        this.close(error => {
+            if(error) return reject(error);
+            resolve();
+        });
+    })
 
 }
 
