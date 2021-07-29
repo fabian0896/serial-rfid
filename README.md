@@ -24,8 +24,22 @@ rfid.readCard(5000)
         console.log(err)
     });
 
+
+rfid.send({
+    type: 'TYPE_MESSAGE',
+    payload:{
+        some: 'info'
+    }
+})
+.then(() => {
+    console.log("The message has send");
+})
+.catch((err) => {
+    console.error(err);
+})
 ````
 
+the `rfid.readCard()` function also works with a callback pass after the timeout  
 
 ## Examples
 
