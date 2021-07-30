@@ -1,6 +1,6 @@
 const SerialPort = require('serialport');
 const ReadLine = require('@serialport/parser-readline');
-
+const Ready = require('@serialport/parser-ready');
 
 class Rfid extends SerialPort {
     /**
@@ -24,6 +24,15 @@ class Rfid extends SerialPort {
         this.parser = this.pipe(new ReadLine());
 
     }
+
+    
+    onReady (callback) {
+        const readyParser = this.pipe(new Ready({
+            delimiter: 'READY'
+        }));
+        readyParser.on('ready', callback);
+    }
+
 
     /**
      * 
@@ -144,9 +153,10 @@ class Rfid extends SerialPort {
 
     /**
      * fFunction to active the reading mode of the RFID
-     * @param {boolean} active 
+     * @param {boolean} active
+     * @param {function(): void} 
      */
-    activeReadingMode(active) {
+    activeReadingMode(active, callback) {
         const strMessage = JSON.stringify({
             type: 'READING_MODE',
             payload: {
@@ -158,6 +168,7 @@ class Rfid extends SerialPort {
         this.drain(error => {
             if(error) return console.log(error);
             console.log("se envio el mensaje");
+            callback && callback();
         })
     }
 
