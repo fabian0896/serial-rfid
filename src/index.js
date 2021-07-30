@@ -48,26 +48,30 @@ class Rfid extends SerialPort {
      * @returns {function} - returns de UID of the card read
      */
     readCardOnce = (callback, timeout = 10000) => {
+        this.activeReadingMode(true);
         const listnerCallback = (data) => {
             try{
                 const json = JSON.parse(data);  
                 if(json.type !== 'CARD_READ') return;
+                this.activeReadingMode(false);
                 this.parser.removeListener('data', listnerCallback);
                 clearTimeout(timer);
                 callback && callback(null, json);
             } catch (error) {
-                console.log(error.message);
+                //console.log(error.message);
             }
         };
 
         this.parser.on('data', listnerCallback);
 
         const timer = setTimeout(() => {
+            this.activeReadingMode(false);
             this.parser.removeListener('data', listnerCallback);
             callback && callback(new Error('time out! No card detected'));
         }, timeout);
 
         return () => {
+            this.activeReadingMode(false);
             clearTimeout(timer);
             this.parser.removeListener('data', listnerCallback);
             console.log('The card reading was canceled');
@@ -137,6 +141,25 @@ class Rfid extends SerialPort {
             resolve();
         });
     })
+
+    /**
+     * fFunction to active the reading mode of the RFID
+     * @param {boolean} active 
+     */
+    activeReadingMode(active) {
+        const strMessage = JSON.stringify({
+            type: 'READING_MODE',
+            payload: {
+                active
+            } 
+        });
+
+        this.write(Buffer.from(strMessage));
+        this.drain(error => {
+            if(error) return console.log(error);
+            console.log("se envio el mensaje");
+        })
+    }
 
 }
 
