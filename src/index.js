@@ -22,13 +22,22 @@ class Rfid extends SerialPort {
 
         /**@private */
         this.parser = this.pipe(new ReadLine());
+
     }
+
+    /**
+     * 
+     * @typedef Message
+     * @property {string} type
+     * @property  {object} payload
+     * @property {string} payload.id
+     */
 
     /**
      * Responde Callback
      * @callback readCardCallback
      * @param {Error} error
-     * @param {string} cardUid of the UID card
+     * @param {Message} data 
      */
 
     /**
@@ -36,27 +45,70 @@ class Rfid extends SerialPort {
      * @method
      * @param {number} [timeout = 9600] - Timeout to wait until a card is read 
      * @param {readCardCallback} callback - Callback function
-     * @returns {Promise<string>} - returns de UID of the card read
+     * @returns {function} - returns de UID of the card read
      */
-    readCard = (timeout = 6000, callback) => new Promise((resolve, reject) => {
+    readCardOnce = (callback, timeout = 10000) => {
+        const listnerCallback = (data) => {
+            try{
+                const json = JSON.parse(data);  
+                if(json.type !== 'CARD_READ') return;
+                this.parser.removeListener('data', listnerCallback);
+                clearTimeout(timer);
+                callback && callback(null, json);
+            } catch (error) {
+                console.log(error.message);
+            }
+        };
+
+        this.parser.on('data', listnerCallback);
+
         const timer = setTimeout(() => {
+            this.parser.removeListener('data', listnerCallback);
             callback && callback(new Error('time out! No card detected'));
-            reject('time out! No card detected');
         }, timeout);
-        this.parser.on('data', data => {
-            parser.removeAllListeners();
+
+        return () => {
             clearTimeout(timer);
-            callback && callback(null, data);
-            resolve(data);
-        })
-    })
+            this.parser.removeListener('data', listnerCallback);
+            console.log('The card reading was canceled');
+        }
+    }
+
 
     /**
-     * 
-     * @typedef Message
-     * @property {string} type
-     * @property  {object} payload
+     * Responde Callback
+     * @callback readCardCallback
+     * @param {Error} error
+     * @param {Message} data of the UID card
      */
+
+    /**
+     * Read de UID of a card 
+     * @method
+     * @param {number} [timeout = 9600] - Timeout to wait until a card is read 
+     * @param {readCardCallback} callback - Callback function
+     * @returns {function} - returns de UID of the card read
+     */
+    readCard = (callback) => {
+        const listnerCallback = (data) => {
+            try{
+                const json = JSON.parse(data);  
+                if(json.type !== 'CARD_READ') return;
+                callback && callback(null, json);
+            } catch (error) {
+                console.log(error.message);
+            }
+        };
+
+        this.parser.on('data', listnerCallback);
+
+        return () => {
+            this.parser.removeListener('data', listnerCallback);
+            console.log('The card reading was canceled');
+        }
+    }
+
+    
     
     /**
      * function to send messages to the serial port
@@ -73,7 +125,7 @@ class Rfid extends SerialPort {
         })
     });
 
-
+    
     /**
      * Disconnect the serial port
      * @method disconnect
