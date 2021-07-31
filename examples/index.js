@@ -1,4 +1,4 @@
-const Rfid = require('../src');
+const Rfid = require('..');
 
 
 const rfid = new Rfid({
@@ -8,7 +8,7 @@ const rfid = new Rfid({
 
 
 rfid.onReady(()=> {
-    rfid.readCardOnce((err, value) => {
+    rfid.readCard((err, value) => {
         if(err) return console.log(err);
         console.log(value);
     });

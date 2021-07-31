@@ -103,6 +103,7 @@ class Rfid extends SerialPort {
      * @returns {function} - returns de UID of the card read
      */
     readCard = (callback) => {
+        this.activeReadingMode(true);
         const listnerCallback = (data) => {
             try{
                 const json = JSON.parse(data);  
@@ -116,6 +117,7 @@ class Rfid extends SerialPort {
         this.parser.on('data', listnerCallback);
 
         return () => {
+            this.activeReadingMode(false);
             this.parser.removeListener('data', listnerCallback);
             console.log('The card reading was canceled');
         }
@@ -166,8 +168,8 @@ class Rfid extends SerialPort {
 
         this.write(Buffer.from(strMessage));
         this.drain(error => {
-            if(error) return console.log(error);
-            console.log("se envio el mensaje");
+            if(error) return console.log("Error: ", error);
+            console.log("se envio el mensaje desde el drain");
             callback && callback();
         })
     }
