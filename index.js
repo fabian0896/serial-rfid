@@ -67,7 +67,7 @@ class Rfid extends SerialPort {
                 clearTimeout(timer);
                 callback && callback(null, json);
             } catch (error) {
-                //console.log(error.message);
+                console.log(error.message);
             }
         };
 
@@ -172,6 +172,16 @@ class Rfid extends SerialPort {
             console.log("se envio el mensaje desde el drain");
             callback && callback();
         })
+    }
+
+
+    onConnectState(callback) {
+       this.on('open', () => {
+           callback && callback(null, 'CONNECTED')
+       });
+       this.on('close', () => {
+           callback && callback(null, 'DISCONNECTED')
+       });
     }
 
 }
