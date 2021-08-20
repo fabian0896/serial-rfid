@@ -17,7 +17,7 @@ class Rfid extends SerialPort {
     constructor({ portPath, baudRate }) {
         super(portPath, {
             baudRate,
-            autoOpen: true
+            autoOpen: false
         });
 
         /**@private */
