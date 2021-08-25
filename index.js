@@ -35,11 +35,11 @@ class Rfid extends SerialPort {
             if (timer) {
                 clearTimeout(timer);
             }
-            callback()
+            callback(null)
         });
         timer = setTimeout(() => {
             readyParser.removeAllListeners();
-            throw new Error('No se pudo conectar con el dispositivo');
+            callback(new Error('no se pudo conectar el dispositivo'));
         }, 10000);
     }
 
