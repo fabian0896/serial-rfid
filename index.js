@@ -27,10 +27,20 @@ class Rfid extends SerialPort {
 
     
     onReady (callback) {
+        let timer;
         const readyParser = this.pipe(new Ready({
             delimiter: 'READY'
         }));
-        readyParser.on('ready', callback);
+        readyParser.on('ready', () => {
+            if (timer) {
+                clearTimeout(timer);
+            }
+            callback(null)
+        });
+        timer = setTimeout(() => {
+            readyParser.removeAllListeners();
+            callback(new Error('no se pudo conectar el dispositivo'));
+        }, 10000);
     }
 
 
