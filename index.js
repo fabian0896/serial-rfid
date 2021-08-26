@@ -57,15 +57,17 @@ class Rfid extends SerialPort {
      * @returns {function} - returns de UID of the card read
      */
     readCardOnce = (callback, timeout = 10000) => {
+        let timer;
         this.activeReadingMode(true);
         const listnerCallback = (data) => {
             try{
                 const json = JSON.parse(data);  
                 if(json.type !== 'CARD_READ') return;
-                this.activeReadingMode(false);
                 this.parser.removeListener('data', listnerCallback);
                 clearTimeout(timer);
-                callback && callback(null, json);
+                this.activeReadingMode(false, () => {
+                    callback && callback(null, json);
+                });
             } catch (error) {
                 console.log(error.message);
             }
@@ -73,7 +75,7 @@ class Rfid extends SerialPort {
 
         this.parser.on('data', listnerCallback);
 
-        const timer = setTimeout(() => {
+        timer = setTimeout(() => {
             this.activeReadingMode(false);
             this.parser.removeListener('data', listnerCallback);
             callback && callback(new Error('time out! No card detected'));
