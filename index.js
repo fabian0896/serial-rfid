@@ -92,10 +92,14 @@ class Rfid extends SerialPort {
         }, timeout);
 
         return () => {
-            this.activeReadingMode(false);
-            clearTimeout(timer);
-            this.parser.removeListener('data', listnerCallback);
-            console.log('The card reading was canceled');
+            return new Promise((resolve) => {
+                clearTimeout(timer);
+                this.parser.removeListener('data', listnerCallback);
+                this.activeReadingMode(false, () => {
+                    console.log('The card reading was canceled');
+                    resolve()
+                });
+            })
         }
     }
 
